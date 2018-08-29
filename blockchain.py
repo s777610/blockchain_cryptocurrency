@@ -2,6 +2,7 @@
 # block is dict
 # open_transactions is list of transaction
 # transaction is dict
+MINING_REWARD = 10
 
 genesis_block = {'previous_hash': '',
                  'index': 0,
@@ -17,8 +18,11 @@ def hash_block(block):
 
 
 def get_balance(participant):
+    # blockchain   =   [{...}, ...]
     # block   =   {'previous_hash': '', 'index': 0, 'transaction': []}
+
     # block['transactions']   =   [...] or [{'sender': sender, 'recipient': recipient, 'amount': amount}, ...]
+    # tx   =   {'sender': sender, 'recipient': recipient, 'amount': amount}
     tx_sender = [[tx['amount'] for tx in block['transactions'] if tx['sender'] == participant] for block in blockchain]
     amount_sent = 0
     for tx in tx_sender:
@@ -59,10 +63,19 @@ def mine_block():
     """
     last_block = blockchain[-1]  # {'previous_hash': '', 'index': 0, 'transaction': []}
     hashed_block = hash_block(last_block)
+
+    # miner get reward
+    reward_transaction = {
+        'sender': 'MINING',
+        'recipient': owner,
+        'amount': MINING_REWARD
+    }
+    open_transactions.append(reward_transaction)
+
     block = {
-             'previous_hash': hashed_block,
-             'index': len(blockchain),
-             'transactions': open_transactions
+        'previous_hash': hashed_block,
+        'index': len(blockchain),
+        'transactions': open_transactions
     }
     blockchain.append(block)
     return True
