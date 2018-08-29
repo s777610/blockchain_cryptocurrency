@@ -85,15 +85,19 @@ def mine_block():
         'recipient': owner,
         'amount': MINING_REWARD
     }
-    open_transactions.append(reward_transaction)  # just add into open transaction
+
+    # now we ensure that is not managed globally but locally
+    # could safely do that without risking that open transaction would be affected
+    copied_transactions = open_transactions[:]
+    copied_transactions.append(reward_transaction)  # just add into open transaction
 
     block = {
         'previous_hash': hashed_block,
         'index': len(blockchain),
-        'transactions': open_transactions  # add open transaction into block
+        'transactions': copied_transactions  # add open transaction into block
     }
     blockchain.append(block)  # add block into blockchain
-    return True
+    return True  # if true, open_transactions = []
 
 
 def get_transaction_value():
@@ -125,6 +129,8 @@ def verify_chain():
     return True
 
 
+def verify_transactions():
+    return all([verify_transaction(tx) for tx in open_transactions])
 
 
 waiting_for_input = True
@@ -136,6 +142,7 @@ while waiting_for_input:
     print("3: Output the blockchain blocks")
     print("4: Output participants")
     print("h: Manipulate the chain")
+    print("5: Check transaction validity")
     print("q: Quit")
     user_choice = get_user_choice()
     if user_choice == '1':
@@ -153,6 +160,11 @@ while waiting_for_input:
         print_blockchain_elements()
     elif user_choice == '4':
         print(participants)
+    elif user_choice == '5':
+        if verify_transactions():
+            print('All transactions are valid')
+        else:
+            print('There are invalid transactions')
     elif user_choice == 'h':
         if len(blockchain) >= 1:
             blockchain[0] = {'previous_hash': '', 'index': 0, 'transaction': [{'sender': 'chris', 'recipient': 'Max', 'amount': 100}]}
