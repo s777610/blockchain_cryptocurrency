@@ -1,6 +1,7 @@
 import functools
-import hashlib
-import json
+from collections import OrderedDict
+
+from hash_util import hash_string_256, hash_block
 
 # blockchain is list
 # block is dict
@@ -10,17 +11,37 @@ MINING_REWARD = 10
 
 genesis_block = {'previous_hash': '',
                  'index': 0,
-                 'transactions': []}
+                 'transactions': [],
+                 'proof': 100}
+
 blockchain = [genesis_block]
 open_transactions = []  # not been included in a new block yet
 owner = 'wilson'
 participants = {'wilson'}
 
 
-def hash_block(block):
-    # return '-'.join([str(block[key]) for key in block])
-    # use json.dumps to convert dict obj to json(string)
-    return hashlib.sha3_256(json.dumps(block).encode()).hexdigest()
+def valid_proof(transactions, last_hash, proof):
+    """
+    to guess the hash which match requirement
+    :param transactions:
+    :param last_hash:
+    :param proof:
+    :return: true or false
+    """
+    # increment proof until much the requirement
+    guess = (str(transactions) + str(last_hash) + str(proof)).encode()
+    guess_hash = hash_string_256(guess)
+    print(guess_hash)
+    return guess_hash[0:2] == '00'
+
+
+def proof_of_work():
+    last_block = blockchain[-1]
+    last_hash = hash_block(last_block)
+    proof = 0
+    while not valid_proof(open_transactions, last_hash, proof):
+        proof += 1
+    return proof
 
 
 def get_balance(participant):
@@ -57,12 +78,17 @@ def verify_transaction(transaction):
 
 
 def add_transaction(recipient, sender=owner, amount=1.0):
+    """
+    can not use this becasue dict is not ordered object
     transaction = {
                    'sender': sender,
                    'recipient': recipient,
                    'amount': amount
     }
-
+    """
+    transaction = OrderedDict(
+        [('sender', sender), ('recipient', recipient), ('amount', amount)]
+    )
     if verify_transaction(transaction):
         open_transactions.append(transaction)
         participants.add(sender)
@@ -80,22 +106,32 @@ def mine_block():
     last_block = blockchain[-1]  # {'previous_hash': '', 'index': 0, 'transaction': []}
     hashed_block = hash_block(last_block)
 
+    # proof of work before adding reward transaction
+    proof = proof_of_work()
+
     # miner get reward
+    """
     reward_transaction = {
         'sender': 'MINING',
         'recipient': owner,
         'amount': MINING_REWARD
     }
+    """
+    reward_transaction = OrderedDict(
+        [('sender', 'MINING'), ('recipient', owner), ('amount', MINING_REWARD)]
+    )
 
     # now we ensure that is not managed globally but locally
     # could safely do that without risking that open transaction would be affected
     copied_transactions = open_transactions[:]
     copied_transactions.append(reward_transaction)  # just add into open transaction
 
+    # we use sort_keys=True, so do not need to use OrderedDict
     block = {
         'previous_hash': hashed_block,
         'index': len(blockchain),
-        'transactions': copied_transactions  # add open transaction into block
+        'transactions': copied_transactions,  # add open transaction into block
+        'proof': proof
     }
     blockchain.append(block)  # add block into blockchain
     return True  # if true, open_transactions = []
@@ -122,11 +158,17 @@ def print_blockchain_elements():
 
 
 def verify_chain():
+    """ verify entire blockchain"""
     for (index, block) in enumerate(blockchain):
         if index == 0:
             continue
         if block['previous_hash'] != hash_block(blockchain[index - 1]):
             return False
+        # not including reward transaction so block['transactions'][:-1]
+        if not valid_proof(block['transactions'][:-1], block['previous_hash'], block['proof']):
+            print("Proof of work is invalid")
+            return False
+
     return True
 
 
