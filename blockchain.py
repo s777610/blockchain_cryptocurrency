@@ -1,4 +1,6 @@
 import functools
+import hashlib
+import json
 
 # blockchain is list
 # block is dict
@@ -16,7 +18,9 @@ participants = {'wilson'}
 
 
 def hash_block(block):
-    return '-'.join([str(block[key]) for key in block])
+    # return '-'.join([str(block[key]) for key in block])
+    # use json.dumps to convert dict obj to json(string)
+    return hashlib.sha3_256(json.dumps(block).encode()).hexdigest()
 
 
 def get_balance(participant):
