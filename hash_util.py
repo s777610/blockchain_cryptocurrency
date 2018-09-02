@@ -6,6 +6,7 @@ def hash_string_256(string):
     return hashlib.sha256(string).hexdigest()
 
 
+# proof_of_work will call this func
 def hash_block(block):
     # return '-'.join([str(block[key]) for key in block])
     # use json.dumps to convert dict obj to json(string)
@@ -22,6 +23,9 @@ def hash_block(block):
     so for next block you are hashing
     you also change something about last block
     """
-    hashable_block = block.__dict__.copy()
+    hashable_block = block.__dict__.copy()  # {'index': 2, 'previous_hash': ...., 'transactions':[tx object, ...]}
+
+    # now converting tx object to ordered_dict, that is why make a copy without changing hashable_block
+    hashable_block['transactions'] = [tx.to_ordered_dict() for tx in hashable_block['transactions']]
     return hash_string_256(json.dumps(hashable_block, sort_keys=True).encode())
 

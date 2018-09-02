@@ -1,10 +1,11 @@
 import functools
-from collections import OrderedDict
 import json
 import pickle  # convert python data to binary data
 
 from hash_util import hash_string_256, hash_block
 from block import Block
+from transaction import Transaction
+
 
 # blockchain is list
 # open_transactions is list of transaction
@@ -33,8 +34,8 @@ def load_data():
             # at this time, blockchain is a list of dict  # [{..}, {..}...]
             updated_blockchain = []
             for block in blockchain:
+                converted_tx = [Transaction(tx['sender'], tx['recipient'], tx['amount']) for tx in block['transactions']]  # a list of transaction object
                 # block = {...}
-                converted_tx = [OrderedDict([('sender', tx['sender']), ('recipient', tx['recipient']), ('amount', tx['amount'])]) for tx in block['transactions']]
                 updated_block = Block(block['index'], block['previous_hash'], converted_tx, block['proof'], block['timestamp'])
                 updated_blockchain.append(updated_block)
             blockchain = updated_blockchain  # a list of block object
@@ -42,8 +43,7 @@ def load_data():
             open_transactions = json.loads(file_content[1])
             updated_transactions = []
             for tx in open_transactions:
-                updated_transaction = OrderedDict(
-                    [('sender', tx['sender']), ('recipient', tx['recipient']), ('amount', tx['amount'])])
+                updated_transaction = Transaction(tx['sender'], tx['recipient'], tx['amount'])
                 updated_transactions.append(updated_transaction)
             open_transactions = updated_transactions
     # IOError is file not found error
@@ -60,11 +60,16 @@ def save_data():
     try:
         # mode should be 'rb' if using pickle, and txt should be p
         with open('blockchain.txt', mode='w') as f:
-            saveable_chain = [block.__dict__ for block in blockchain]
+
+            # chain_with_dict_tx is a list of block object, which consist dict transaction
+            chain_with_dict_tx = [Block(block_el.index, block_el.previous_hash, [tx.__dict__ for tx in block_el.transactions], block_el.proof, block_el.timestamp) for block_el in blockchain]
+
+            saveable_chain = [block.__dict__ for block in chain_with_dict_tx]
             # save as json data
             f.write(json.dumps(saveable_chain))  # from list to string
             f.write('\n')
-            f.write(json.dumps(open_transactions))  # from list ot string
+            saveable_tx = [tx.__dict__ for tx in open_transactions]
+            f.write(json.dumps(saveable_tx))  # from list ot string
             """
             save as binary data
             save_data = {
@@ -80,13 +85,9 @@ def save_data():
 def valid_proof(transactions, last_hash, proof):
     """
     to guess the hash which match requirement
-    :param transactions: The transactions of the block for which the proof is created.
-    :param last_hash: The previous block's hash which will be stored in the current block.
-    :param proof: The proof number we're testing.
-    :return: true or false
     """
     # increment proof until much the requirement
-    guess = (str(transactions) + str(last_hash) + str(proof)).encode()
+    guess = (str([tx.to_ordered_dict() for tx in transactions]) + str(last_hash) + str(proof)).encode()
     guess_hash = hash_string_256(guess)
     return guess_hash[0:2] == '00'
 
@@ -107,17 +108,17 @@ def proof_of_work():
 
 def get_balance(participant):
     # blockchain   =   [block object, ...]
+    # block.transactions  =  [transactions object, ...]
 
-    # tx   =   {'sender': sender, 'recipient': recipient, 'amount': amount}
     # amount in blockchain
-    tx_sender = [[tx['amount'] for tx in block.transactions if tx['sender'] == participant] for block in blockchain]
+    tx_sender = [[tx.amount for tx in block.transactions if tx.sender == participant] for block in blockchain]
     # amount in open transaction
-    open_tx_sender = [tx['amount'] for tx in open_transactions if tx['sender'] == participant]
+    open_tx_sender = [tx.amount for tx in open_transactions if tx.sender == participant]
     tx_sender.append(open_tx_sender)  # a list, consist all send transaction(blockchain and open transaction)
     # print(tx_sender)  # [[], [], [], [], [12.0, 2.0], [9.4], [3.0, 2.1, 1.2], []]
 
     amount_sent = functools.reduce(lambda tx_sum, tx_amt: tx_sum + sum(tx_amt) if len(tx_amt) > 0 else tx_sum + 0, tx_sender, 0)
-    tx_recipient = [[tx['amount'] for tx in block.transactions if tx['recipient'] == participant] for block in blockchain]
+    tx_recipient = [[tx.amount for tx in block.transactions if tx.recipient == participant] for block in blockchain]
     amount_received = functools.reduce(lambda tx_sum, tx_amt: tx_sum + sum(tx_amt) if len(tx_amt) > 0 else tx_sum + 0, tx_recipient, 0)
 
     # return total balance
@@ -132,8 +133,8 @@ def get_last_blockchain_value():
 
 
 def verify_transaction(transaction):
-    sender_balance = get_balance(transaction['sender'])
-    return sender_balance >= transaction['amount']
+    sender_balance = get_balance(transaction.sender)
+    return sender_balance >= transaction.amount
 
 
 def add_transaction(recipient, sender=owner, amount=1.0):
@@ -145,13 +146,9 @@ def add_transaction(recipient, sender=owner, amount=1.0):
                    'amount': amount
     }
     """
-    transaction = OrderedDict(
-        [('sender', sender), ('recipient', recipient), ('amount', amount)]
-    )
+    transaction = Transaction(sender, recipient, amount)
     if verify_transaction(transaction):
         open_transactions.append(transaction)
-        participants.add(sender)
-        participants.add(recipient)
         save_data()
         return True
     return False
@@ -170,15 +167,12 @@ def mine_block():
     proof = proof_of_work()
 
     # miner get reward
-    reward_transaction = OrderedDict(
-        [('sender', 'MINING'), ('recipient', owner), ('amount', MINING_REWARD)]
-    )
+    reward_transaction = Transaction(sender='MINING', recipient=owner, amount=MINING_REWARD)
 
     # now we ensure that is not managed globally but locally
     # could safely do that without risking that open transaction would be affected
     copied_transactions = open_transactions[:]
     copied_transactions.append(reward_transaction)  # just add into open transaction
-
     block = Block(len(blockchain), hashed_block, copied_transactions, proof)
     blockchain.append(block)  # add block into blockchain
     return True  # if true, open_transactions = []
