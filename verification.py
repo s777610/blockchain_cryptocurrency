@@ -32,7 +32,7 @@ class Verification:
 
     @staticmethod
     def verify_transaction(transaction, get_balance):
-        sender_balance = get_balance()
+        sender_balance = get_balance()  # amount_received - amount_sent
         return sender_balance >= transaction.amount
 
     @classmethod
