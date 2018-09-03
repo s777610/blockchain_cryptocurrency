@@ -11,10 +11,9 @@ class Node:
     """
 
     def __init__(self):
-        #self.id = str(uuid4())
+        # self.id = str(uuid4())
         self.id = 'wilson'
         self.blockchain = Blockchain(self.id)
-
 
     def get_transaction_value(self):
         tx_recipient = input('Enter the recipient of the transaction: ')
@@ -44,7 +43,7 @@ class Node:
             print("q: Quit")
             user_choice = self.get_user_choice()
             if user_choice == '1':
-                tx_data = self.get_transaction_value()
+                tx_data = self.get_transaction_value()  # from user input
                 recipient, amount = tx_data
                 if self.blockchain.add_transaction(recipient=recipient, sender=self.id, amount=amount):
                     print('Added transaction!')
@@ -56,8 +55,7 @@ class Node:
             elif user_choice == '3':
                 self.print_blockchain_elements()
             elif user_choice == '4':
-                verifier = Verification()
-                if verifier.verify_transactions(self.blockchain.open_transactions, self.blockchain.get_balance):
+                if Verification.verify_transactions(self.blockchain.open_transactions, self.blockchain.get_balance):
                     print('All transactions are valid')
                 else:
                     print('There are invalid transactions')
@@ -65,8 +63,7 @@ class Node:
                 waiting_for_input = False
             else:
                 print('Input was invalid, please pick a value from the list!')
-            verifier = Verification()
-            if not verifier.verify_chain(self.blockchain.chain):
+            if not Verification.verify_chain(self.blockchain.chain):
                 self.print_blockchain_elements()
                 print("Invalid Blockchain!")
                 break
