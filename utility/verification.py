@@ -1,5 +1,5 @@
 
-from hash_util import hash_string_256, hash_block
+from utility.hash_util import hash_string_256, hash_block
 
 
 # just a helper class, no need to create object
