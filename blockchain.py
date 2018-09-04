@@ -5,6 +5,7 @@ from utility.hash_util import hash_block
 from block import Block
 from transaction import Transaction
 from utility.verification import Verification
+from wallet import Wallet
 
 
 MINING_REWARD = 10
@@ -53,7 +54,7 @@ class Blockchain:
                 # at this time, blockchain is a list of dict  # [{..}, {..}...]
                 updated_blockchain = []
                 for block in blockchain:
-                    converted_tx = [Transaction(tx['sender'], tx['recipient'], tx['amount']) for tx in block['transactions']]  # a list of transaction object
+                    converted_tx = [Transaction(tx['sender'], tx['recipient'], tx['signature'], tx['amount']) for tx in block['transactions']]  # a list of transaction object
                     # block = {...} for now
                     updated_block = Block(block['index'], block['previous_hash'], converted_tx, block['proof'], block['timestamp'])
                     updated_blockchain.append(updated_block)
@@ -62,7 +63,7 @@ class Blockchain:
                 open_transactions = json.loads(file_content[1])
                 updated_transactions = []
                 for tx in open_transactions:
-                    updated_transaction = Transaction(tx['sender'], tx['recipient'], tx['amount'])
+                    updated_transaction = Transaction(tx['sender'], tx['recipient'], tx['signature'], tx['amount'])
                     updated_transactions.append(updated_transaction)
                 self.__open_transactions = updated_transactions
         # IOError is file not found error
@@ -134,7 +135,7 @@ class Blockchain:
             return None
         return self.__chain[-1]
 
-    def add_transaction(self, recipient, sender, amount=1.0):
+    def add_transaction(self, recipient, sender, signature, amount=1.0):
         """
         can not use this becasue dict is not ordered object
         transaction = {
@@ -145,7 +146,9 @@ class Blockchain:
         """
         if self.hosting_node == None:
             return False
-        transaction = Transaction(sender, recipient, amount)
+        transaction = Transaction(sender, recipient, signature, amount)
+        if not Wallet.verify_transaction(transaction):
+            return False
         if Verification.verify_transaction(transaction, self.get_balance):
             self.__open_transactions.append(transaction)
             self.save_data()
@@ -167,13 +170,17 @@ class Blockchain:
         proof = self.proof_of_work()
 
         # miner get reward, reward will be sent to the node which did mining
-        reward_transaction = Transaction(sender='MINING', recipient=self.hosting_node, amount=MINING_REWARD)
+        # we never verify signature here
+        reward_transaction = Transaction(sender='MINING', recipient=self.hosting_node, signature='', amount=MINING_REWARD)
 
         # now we ensure that is not managed globally but locally
         # could safely do that without risking that open transaction would be affected
         copied_transactions = self.__open_transactions[:]
         copied_transactions.append(reward_transaction)  # just add into open transaction
         block = Block(index=len(self.__chain), previous_hash=hashed_block, transactions=copied_transactions, proof=proof)
+        for tx in block.transactions:
+            if not Wallet.verify_transaction(tx):
+                return False
         self.__chain.append(block)  # add new block into blockchain
         self.__open_transactions = []
         self.save_data()
