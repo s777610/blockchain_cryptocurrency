@@ -11,7 +11,7 @@ MINING_REWARD = 10
 
 
 class Blockchain:
-    def __init__(self, hosting_node_id):
+    def __init__(self, hosting_node_id):  # hosting_node is public_key
         genesis_block = Block(0, '', [], 100, 0)
         # __open_transactions should only be accessed within this class
         self.chain = [genesis_block]  # initialize blockchain list
@@ -143,6 +143,8 @@ class Blockchain:
                        'amount': amount
         }
         """
+        if self.hosting_node == None:
+            return False
         transaction = Transaction(sender, recipient, amount)
         if Verification.verify_transaction(transaction, self.get_balance):
             self.__open_transactions.append(transaction)
@@ -156,6 +158,8 @@ class Blockchain:
         """
         take all open_transactions and add to a new block, add to blockchain
         """
+        if self.hosting_node == None:
+            return False
         last_block = self.__chain[-1]
         hashed_block = hash_block(last_block)
 
