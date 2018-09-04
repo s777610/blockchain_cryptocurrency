@@ -147,8 +147,6 @@ class Blockchain:
         if self.hosting_node == None:
             return False
         transaction = Transaction(sender, recipient, signature, amount)
-        if not Wallet.verify_transaction(transaction):
-            return False
         if Verification.verify_transaction(transaction, self.get_balance):
             self.__open_transactions.append(transaction)
             self.save_data()
@@ -176,11 +174,15 @@ class Blockchain:
         # now we ensure that is not managed globally but locally
         # could safely do that without risking that open transaction would be affected
         copied_transactions = self.__open_transactions[:]
-        copied_transactions.append(reward_transaction)  # just add into open transaction
-        block = Block(index=len(self.__chain), previous_hash=hashed_block, transactions=copied_transactions, proof=proof)
-        for tx in block.transactions:
+
+        # loop check all transactions(not include reward transactions) which will be added in next block
+        for tx in copied_transactions:
             if not Wallet.verify_transaction(tx):
                 return False
+        copied_transactions.append(reward_transaction)  # just add into open transaction
+
+        block = Block(index=len(self.__chain), previous_hash=hashed_block, transactions=copied_transactions, proof=proof)
+
         self.__chain.append(block)  # add new block into blockchain
         self.__open_transactions = []
         self.save_data()

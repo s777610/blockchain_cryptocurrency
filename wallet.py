@@ -58,9 +58,7 @@ class Wallet:
 
     @staticmethod  # we don't access class here
     def verify_transaction(transaction):
-        # we don't verify this because this transaction does not have signature
-        if transaction.sender == 'MINING':
-            return True
+
         # use binascii.unhexlify to convert string to binary
         public_key = RSA.importKey(binascii.unhexlify(transaction.sender))  # transaction.sender is public_key
         # verifier to verify transaction
