@@ -111,8 +111,9 @@ class Blockchain:
         return proof
 
     def get_balance(self):
+        if self.hosting_node == None:
+            return None
         participant = self.hosting_node
-
         # self.__chain   =   [block object, ...]
         # block.transactions  =  [transactions object, ...]
         # amount in blockchain
