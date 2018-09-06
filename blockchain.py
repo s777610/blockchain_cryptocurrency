@@ -160,7 +160,7 @@ class Blockchain:
         take all open_transactions and add to a new block, add to blockchain
         """
         if self.hosting_node == None:
-            return False
+            return None
         last_block = self.__chain[-1]
         hashed_block = hash_block(last_block)
 
@@ -178,7 +178,7 @@ class Blockchain:
         # loop check all transactions(not include reward transactions) which will be added in next block
         for tx in copied_transactions:
             if not Wallet.verify_transaction(tx):
-                return False
+                return None
         copied_transactions.append(reward_transaction)  # just add into open transaction
 
         block = Block(index=len(self.__chain), previous_hash=hashed_block, transactions=copied_transactions, proof=proof)
@@ -186,4 +186,4 @@ class Blockchain:
         self.__chain.append(block)  # add new block into blockchain
         self.__open_transactions = []
         self.save_data()
-        return True
+        return block
