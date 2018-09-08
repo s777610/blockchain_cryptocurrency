@@ -76,7 +76,7 @@ def get_balance():
         return jsonify(response), 500
 
 
-@app.route('/broadcast-transaction')
+@app.route('/broadcast-transaction', methods=['POST'])
 def broadcast_transaction():
     values = request.get_json()
     if not values:
@@ -105,6 +105,28 @@ def broadcast_transaction():
             'message': 'Creating a transaction failed.'
         }
         return jsonify(response), 500
+
+
+@app.route('/broadcast-block', methods=['POST'])
+def broadcast_block():
+    values = request.get_json()
+    if not values:
+        response = {'message': 'No data found.'}
+        return jsonify(response), 400
+    if 'block' not in values:
+        response = {'message': 'Some data is missing.'}
+        return jsonify(response), 400
+    block = values['block']
+    # in this case, we can start broadcast block
+    if block['index'] == blockchain.chain[-1].index + 1:
+        blockchain.add_block(block)
+    # some block are missing
+    elif block['index'] > blockchain.chain[-1].index:
+        pass
+    # incoming block is wrong
+    else:
+        response = {'message': 'Blockchain seems to be shorter, block not added'}
+        return jsonify(response), 409  # data you sent is invalid
 
 
 # add single transaction
