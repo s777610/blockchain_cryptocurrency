@@ -8,15 +8,18 @@ from flask_cors import CORS  # Cross-Origin Resource Sharing
 from blockchain import Blockchain
 
 app = Flask(__name__)
-wallet = Wallet()
-blockchain = Blockchain(wallet.public_key)
 CORS(app)
 
 
 # pass path and type of request
 @app.route('/', methods=['GET'])
-def get_ui():
+def get_node_ui():
     return send_from_directory('templates', 'node.html')
+
+
+@app.route('/network', methods=['GET'])
+def get_network_ui():
+    return send_from_directory('templates', 'network.html')
 
 
 @app.route('/wallet', methods=['POST'])
@@ -24,7 +27,7 @@ def create_keys():
     wallet.create_keys()
     if wallet.save_keys():
         global blockchain
-        blockchain = Blockchain(wallet.public_key)
+        blockchain = Blockchain(wallet.public_key, port)
         response = {
             'public_key': wallet.public_key,
             'private_key': wallet.private_key,
@@ -42,7 +45,7 @@ def create_keys():
 def load_keys():
     if wallet.load_keys():
         global blockchain
-        blockchain = Blockchain(wallet.public_key)
+        blockchain = Blockchain(wallet.public_key, port)
         response = {
             'public_key': wallet.public_key,
             'private_key': wallet.private_key,
@@ -206,7 +209,17 @@ def get_node():
 
 
 if __name__ == '__main__':
+    '''User can pass the port args in order to run app on different server'''
+    from argparse import ArgumentParser
+    parser = ArgumentParser()
+    parser.add_argument('-p', '--port', type=int, default=5000)
+    args = parser.parse_args()
+    port = args.port
+
+    wallet = Wallet(port)
+    blockchain = Blockchain(wallet.public_key, port)
+
     # run() take 2 args, IP and port
-    app.run(host='0.0.0.0', port=5002)
+    app.run(host='0.0.0.0', port=port)
 
 

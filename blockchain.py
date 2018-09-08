@@ -12,13 +12,14 @@ MINING_REWARD = 10
 
 
 class Blockchain:
-    def __init__(self, hosting_node_id):  # hosting_node is public_key
+    def __init__(self, public_key, node_id):  # hosting_node is public_key
         genesis_block = Block(0, '', [], 100, 0)
         # __open_transactions should only be accessed within this class
         self.chain = [genesis_block]  # initialize blockchain list
         self.__open_transactions = []  # open_transactions is list of transaction, not including reward
-        self.hosting_node = hosting_node_id
+        self.public_key = public_key
         self.__peer_nodes = set()
+        self.node_id = node_id
         self.load_data()
 
     """
@@ -45,7 +46,7 @@ class Blockchain:
     def load_data(self):
         try:
             # mode should be 'rb' if using pickle, and txt should be p
-            with open('blockchain.txt', mode='r') as f:
+            with open('blockchain-{}.txt'.format(self.node_id), mode='r') as f:
                 # file_content = pickle.loads(f.read())
                 # blockchain = file_content['chain']
                 # open_transactions = file_content['ot']
@@ -80,7 +81,7 @@ class Blockchain:
     def save_data(self):
         try:
             # mode should be 'rb' if using pickle, and txt should be p
-            with open('blockchain.txt', mode='w') as f:
+            with open('blockchain-{}.txt'.format(self.node_id), mode='w') as f:
                 # chain_with_dict_tx is a list of block object, which consist dict transaction
                 # [tx.__dict__ for tx in block_el.transactions]
                 chain_with_dict_tx = [Block(block_el.index, block_el.previous_hash, [tx.__dict__ for tx in block_el.transactions], block_el.proof, block_el.timestamp) for block_el in self.__chain]
@@ -119,9 +120,9 @@ class Blockchain:
 
 
     def get_balance(self):
-        if self.hosting_node == None:
+        if self.public_key == None:
             return None
-        participant = self.hosting_node
+        participant = self.public_key
         # self.__chain   =   [block object, ...]
         # block.transactions  =  [transactions object, ...]
         # amount in blockchain
@@ -153,7 +154,7 @@ class Blockchain:
                        'amount': amount
         }
         """
-        if self.hosting_node == None:
+        if self.public_key == None:
             return False
         transaction = Transaction(sender, recipient, signature, amount)
         if Verification.verify_transaction(transaction, self.get_balance):
@@ -168,7 +169,7 @@ class Blockchain:
         """
         take all open_transactions and add to a new block, add to blockchain
         """
-        if self.hosting_node == None:
+        if self.public_key == None:
             return None
         last_block = self.__chain[-1]
         hashed_block = hash_block(last_block)
@@ -178,7 +179,7 @@ class Blockchain:
 
         # miner get reward, reward will be sent to the node which did mining
         # we never verify signature here
-        reward_transaction = Transaction(sender='MINING', recipient=self.hosting_node, signature='', amount=MINING_REWARD)
+        reward_transaction = Transaction(sender='MINING', recipient=self.public_key, signature='', amount=MINING_REWARD)
 
         # now we ensure that is not managed globally but locally
         # could safely do that without risking that open transaction would be affected
