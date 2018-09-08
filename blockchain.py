@@ -158,8 +158,8 @@ class Blockchain:
                        'amount': amount
         }
         """
-        if self.public_key == None:
-            return False
+        # if self.public_key == None:
+        #     return False
         transaction = Transaction(sender, recipient, signature, amount)
         if Verification.verify_transaction(transaction, self.get_balance):
             self.__open_transactions.append(transaction)
@@ -169,7 +169,7 @@ class Blockchain:
             if not is_receiving:
                 # broadcast transaction to each peer node
                 for node in self.__peer_nodes:
-                    url = 'httpL//{}/broadcast-transaction'.format(node)
+                    url = 'http://{}/broadcast-transaction'.format(node)
                     try:
                         response = requests.post(url, json={'sender': sender, 'recipient': recipient,
                                                  'amount': amount, 'signature': signature})
@@ -227,6 +227,7 @@ class Blockchain:
         return block
 
     def add_block(self, block):  # block is dict here
+        # transactions is a list of transaction object
         transactions = [Transaction(tx['sender'], tx['recipient'], tx['signature'], tx['amount']) for tx in block['transactions']]
         proof_is_valid = Verification.valid_proof(transactions[:-1], block['previous_hash'], block['proof'])
         hashes_match = hash_block(self.chain[-1]) == block['previous_hash']
@@ -234,6 +235,23 @@ class Blockchain:
             return False
         converted_block = Block(block['index'], block['previous_hash'], transactions, block['proof'], block['timestamp'])
         self.__chain.append(converted_block)
+
+        """
+        update open transaction on peer node, when broadcast block to peer node
+        the some open transactions on peer node should be removed because it will be store in new block
+        """
+        stored_transactions = self.__open_transactions[:]
+        for itx in block['transactions']:  # itx is incoming tx
+            for opentx in stored_transactions:  # opentx is open transaction of node
+                # for every incoming transaction, check if it is part of my open transaction
+                if opentx.sender == itx['sender'] and opentx.recipient == itx['recipient'] and opentx.amount == itx['amount'] and opentx.signature == itx['signature']:
+                    # if same, try removing it from peer node to prevent encountering second time
+                    try:
+                        self.__open_transactions.remove(opentx)
+                    except ValueError:
+                        print('Item was already removed')
+
+
         self.save_data()
         return True
 
