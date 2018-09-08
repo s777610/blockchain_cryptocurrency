@@ -119,7 +119,13 @@ def broadcast_block():
     block = values['block']
     # in this case, we can start broadcast block
     if block['index'] == blockchain.chain[-1].index + 1:
-        blockchain.add_block(block)
+        if blockchain.add_block(block):
+            response = {'message': 'Block added'}
+            return jsonify(response), 201
+        else:
+            response = {'message': 'Block seems invalid.'}
+            return jsonify(response), 500
+
     # some block are missing
     elif block['index'] > blockchain.chain[-1].index:
         pass
