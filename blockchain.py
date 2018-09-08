@@ -1,5 +1,7 @@
 import functools
 import json
+import pickle
+import requests
 
 from utility.hash_util import hash_block
 from block import Block
@@ -118,11 +120,13 @@ class Blockchain:
             proof += 1
         return proof
 
-
-    def get_balance(self):
-        if self.public_key == None:
-            return None
-        participant = self.public_key
+    def get_balance(self, sender=None):
+        if sender == None:
+            if self.public_key == None:
+                return None
+            participant = self.public_key
+        else:
+            participant = sender
         # self.__chain   =   [block object, ...]
         # block.transactions  =  [transactions object, ...]
         # amount in blockchain
@@ -145,7 +149,7 @@ class Blockchain:
             return None
         return self.__chain[-1]
 
-    def add_transaction(self, recipient, sender, signature, amount=1.0):
+    def add_transaction(self, recipient, sender, signature, amount=1.0, is_receiving=False):
         """
         can not use this becasue dict is not ordered object
         transaction = {
@@ -160,6 +164,20 @@ class Blockchain:
         if Verification.verify_transaction(transaction, self.get_balance):
             self.__open_transactions.append(transaction)
             self.save_data()
+
+            # only broadcast to peer node if we are on the node where we originally create that transaction
+            if not is_receiving:
+                # broadcast transaction to each peer node
+                for node in self.__peer_nodes:
+                    url = 'httpL//{}/broadcast-transaction'.format(node)
+                    try:
+                        response = requests.post(url, json={'sender': sender, 'recipient': recipient,
+                                                 'amount': amount, 'signature': signature})
+                        if response.status_code == 400 or response.status_code == 500:
+                            print('Broadcast transaction declined, needs resolving')
+                            return False
+                    except requests.exceptions.ConnectionError:  # the server of node is not running
+                        continue  # this node does not running, others may do, so continue
             return True
         return False
 
