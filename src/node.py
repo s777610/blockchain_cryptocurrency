@@ -7,7 +7,7 @@ from flask_cors import CORS  # Cross-Origin Resource Sharing
 from src.models.wallet import Wallet
 from src.models.blockchain import Blockchain
 
-app = Flask(__name__)
+app = Flask(__name__, static_url_path='/static')
 CORS(app)
 
 

@@ -1,0 +1,93 @@
+
+
+
+
+html.page {
+  background: url("https://user-images.githubusercontent.com/35472776/44134963-dbe22ad0-a01b-11e8-9335-8d2d6ab520f1.jpg") no-repeat center center fixed;
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  -o-background-size: cover;
+  background-size: cover;
+}
+html.page body {
+    background: none;
+}
+
+body.body {
+    color: white;
+}
+
+.clear-float {
+    clear:both;
+}
+
+header {
+  text-align: center;
+  background: url("https://user-images.githubusercontent.com/35472776/44134963-dbe22ad0-a01b-11e8-9335-8d2d6ab520f1.jpg");
+  background-size: cover;
+  color: white;
+}
+
+header img#logo_light {
+  float: left;
+  margin-top: 0;
+  margin-left: 0;
+  width:300px;
+  height:150px;
+}
+
+ul.menu {
+  padding: 10px;
+  background: rgba(0, 0, 0, 0.5);
+  margin-top: 8px;
+        }
+
+
+div.list-group-item {
+    color: black;
+}
+
+.lds-ring {
+    display: inline-block;
+    position: relative;
+    width: 64px;
+    height: 64px;
+}
+
+.lds-ring div {
+    box-sizing: border-box;
+    display: block;
+    position: absolute;
+    width: 51px;
+    height: 51px;
+    margin: 6px;
+    border: 6px solid #fa923f;
+    border-radius: 50%;
+    animation: lds-ring 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+    border-color: #fa923f transparent transparent transparent;
+}
+
+.lds-ring div:nth-child(1) {
+    animation-delay: -0.45s;
+}
+
+.lds-ring div:nth-child(2) {
+    animation-delay: -0.3s;
+}
+
+.lds-ring div:nth-child(3) {
+    animation-delay: -0.15s;
+}
+
+@keyframes lds-ring {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+div.hight-div {
+    margin: 40px 0;
+}
