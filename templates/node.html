@@ -146,6 +146,7 @@
                 <div class="col">
                     <button class="btn btn-primary" @click="onLoadData">{{ view === 'chain' ? 'Load Blockchain' : 'Load Transactions' }}</button>
                     <button v-if="view === 'chain' && wallet" class="btn btn-success" @click="onMine">Mine Coins</button>
+                    <button class="btn btn-warning" @click="onResolve">Resolve Conflicts</button>
                 </div>
             </div>
             <div class="row">
@@ -238,30 +239,29 @@
                 onCreateWallet: function () {
                     // Send Http request to create a new wallet (and return keys)
                     var vm = this;
-                    this.walletLoading = true;
-                    axios.post('/wallet')  // use axios to send post request
-                        .then(function (response) { // use then to handle response
+                    this.walletLoading = true
+                    axios.post('/wallet')
+                        .then(function (response) {
                             vm.error = null;
                             vm.success = 'Created Wallet! Public Key: ' + response.data.public_key + ', Private Key: ' + response.data.private_key;
                             vm.wallet = {
                                 public_key: response.data.public_key,
                                 private_key: response.data.private_key
-                            };
+                            }
                             vm.funds = response.data.funds;
                             vm.walletLoading = false
                         })
                         .catch(function (error) {
                             vm.success = null;
-                            vm.error = error.response.data.message;
-                            vm.wallet = null;
+                            vm.error = error.response.data.message
+                            vm.wallet = null
                             vm.walletLoading = false
                         });
                 },
-
                 onLoadWallet: function () {
                     // Send Http request to load an existing wallet (from a file on the server)
                     var vm = this;
-                    this.walletLoading = true;
+                    this.walletLoading = true
                     axios.get('/wallet')
                         .then(function (response) {
                             vm.error = null;
@@ -280,7 +280,6 @@
                             vm.walletLoading = false;
                         });
                 },
-
                 onSendTx: function () {
                     // Send Transaction to backend
                     this.txLoading = true;
@@ -303,7 +302,7 @@
                     });
                 },
                 onMine: function () {
-                    var vm = this;
+                    var vm = this
                     axios.post('/mine')
                         .then(function(response) {
                             vm.error = null;
@@ -316,31 +315,42 @@
                             vm.error = error.response.data.message;
                         });
                 },
+                onResolve: function() {
+                    var vm = this
+                    axios.post('/resolve-conflicts')
+                        .then(function(response) {
+                            vm.error = null;
+                            vm.success = response.data.message;
+                        })
+                        .catch(function (error) {
+                            vm.success = null;
+                            vm.error = error.response.data.message;
+                        });
+                },
                 onLoadData: function () {
                     if (this.view === 'chain') {
                         // Load blockchain data
-                        var vm = this; // vm is view model, this is that instance
-                        this.dataLoading = true;
-                        axios.get('/chain') // get data form chain endpoint
-                            // response is data from chain endpoint
+                        var vm = this
+                        this.dataLoading = true
+                        axios.get('/chain')
                             .then(function (response) {
-                                vm.blockchain = response.data;  // response is from chain endpoint
+                                vm.blockchain = response.data
                                 vm.dataLoading = false
                             })
                             .catch(function (error) {
-                                vm.dataLoading = false;
+                                vm.dataLoading = false
                                 vm.error = 'Something went wrong.'
                             });
                     } else {
                         // Load transaction data
-                        var vm = this;
+                        var vm = this
                         axios.get('/transactions')
                             .then(function (response) {
-                                vm.openTransactions = response.data;
+                                vm.openTransactions = response.data
                                 vm.dataLoading = false
                             })
                             .catch(function (error) {
-                                vm.dataLoading = false;
+                                vm.dataLoading = false
                                 vm.error = 'Something went wrong.'
                             });
                     }

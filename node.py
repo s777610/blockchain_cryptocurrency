@@ -1,10 +1,10 @@
 
 from flask import Flask, jsonify, request, send_from_directory
-from wallet import Wallet
-
 # only clients running on same server can access this server
 # only web pages html returned by a server can again send requests to it
 from flask_cors import CORS  # Cross-Origin Resource Sharing
+
+from wallet import Wallet
 from blockchain import Blockchain
 
 app = Flask(__name__)
@@ -36,7 +36,7 @@ def create_keys():
         return jsonify(response), 201
     else:
         response = {
-            'message': 'Save the keys failed.'
+            'message': 'Saving the keys failed.'
         }
         return jsonify(response), 500
 
@@ -100,7 +100,7 @@ def broadcast_transaction():
             }
         }
         return jsonify(response), 201
-    else:
+    else:  # may be a problem with the node this is coming from
         response = {
             'message': 'Creating a transaction failed.'
         }
@@ -124,11 +124,13 @@ def broadcast_block():
             return jsonify(response), 201
         else:
             response = {'message': 'Block seems invalid.'}
-            return jsonify(response), 500
+            return jsonify(response), 409
 
     # some block are missing
     elif block['index'] > blockchain.chain[-1].index:
-        pass
+        response = {'message': 'Blockchain seems to be differ from local blockchain.'}
+        blockchain.resolve_conflicts = True  # for that peer node
+        return jsonify(response), 200
     # incoming block is wrong
     else:
         response = {'message': 'Blockchain seems to be shorter, block not added'}
@@ -149,7 +151,7 @@ def add_transaction():
         response = {
             'message': 'No data found.'
         }
-        return jsonify(response), 40
+        return jsonify(response), 400
     required_fields = ['recipient', 'amount']
     # each field in values will return True or False
     if not all(field in values for field in required_fields):
@@ -182,6 +184,10 @@ def add_transaction():
 
 @app.route('/mine', methods=['POST'])
 def mine():
+    # we never mine a block if we know we have conflict
+    if blockchain.resolve_conflicts:
+        response = {'message': 'Resolve conflicts first, block not added!'}
+        return jsonify(response), 409
     block = blockchain.mine_block()  # mine block return block
     if block != None:
         dict_block = block.__dict__.copy()
@@ -198,6 +204,16 @@ def mine():
             'wallet_set_up': wallet.public_key != None
         }
         return jsonify(response), 500
+
+
+@app.route('/resolve-conflicts', methods=['POST'])
+def resolve_conflicts():
+    replaced = blockchain.resolve()
+    if replaced:
+        response = {'message': 'Chain was replaced!'}
+    else:
+        response = {'message': 'Local chain kept!'}
+    return jsonify(response), 200
 
 
 # get open transaction
