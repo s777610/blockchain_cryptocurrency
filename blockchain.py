@@ -122,8 +122,8 @@ class Blockchain:
         return proof
 
     def get_balance(self, sender=None):
-        if sender == None:
-            if self.public_key == None:
+        if sender is None:
+            if self.public_key is None:
                 return None
             participant = self.public_key
         else:
@@ -188,7 +188,7 @@ class Blockchain:
         """
         take all open_transactions and add to a new block, add to blockchain
         """
-        if self.public_key == None:
+        if self.public_key is None:
             return None
         last_block = self.__chain[-1]
         hashed_block = hash_block(last_block)
