@@ -1,6 +1,6 @@
 
-from utility.hash_util import hash_string_256, hash_block
-from wallet import Wallet
+from src.utility.hash_util import hash_string_256, hash_block
+from src.models.wallet import Wallet
 
 
 # just a helper class, no need to create object

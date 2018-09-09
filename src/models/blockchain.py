@@ -1,13 +1,12 @@
 import functools
 import json
-import pickle
 import requests
 
-from utility.hash_util import hash_block
-from block import Block
-from transaction import Transaction
-from utility.verification import Verification
-from wallet import Wallet
+from src.utility.hash_util import hash_block
+from src.models.block import Block
+from src.models.transaction import Transaction
+from src.utility.verification import Verification
+from src.models.wallet import Wallet
 
 
 MINING_REWARD = 10

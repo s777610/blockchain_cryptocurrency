@@ -1,6 +1,6 @@
-from blockchain import Blockchain
-from utility.verification import Verification
-from wallet import Wallet
+from src.models.blockchain import Blockchain
+from src.utility import Verification
+from src.models.wallet import Wallet
 
 
 class Node:
