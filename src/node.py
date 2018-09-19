@@ -3,8 +3,8 @@ from flask import Flask, jsonify, request, send_from_directory
 # only web pages html returned by a server can again send requests to it
 from flask_cors import CORS  # Cross-Origin Resource Sharing
 
-from src.models.wallet import Wallet
-from src.models.blockchain import Blockchain
+from models.wallet import Wallet
+from models.blockchain import Blockchain
 
 app = Flask(__name__, static_url_path='/static')
 CORS(app)

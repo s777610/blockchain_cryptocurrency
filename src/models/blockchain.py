@@ -2,11 +2,11 @@ import functools
 import json
 import requests
 
-from src.utility.hash_util import hash_block
-from src.models.block import Block
-from src.models.transaction import Transaction
-from src.utility.verification import Verification
-from src.models.wallet import Wallet
+from utility.hash_util import hash_block
+from models.block import Block
+from models.transaction import Transaction
+from utility.verification import Verification
+from models.wallet import Wallet
 
 
 MINING_REWARD = 10
