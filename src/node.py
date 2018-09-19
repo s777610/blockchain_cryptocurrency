@@ -1,4 +1,3 @@
-
 from flask import Flask, jsonify, request, send_from_directory
 # only clients running on same server can access this server
 # only web pages html returned by a server can again send requests to it
@@ -181,7 +180,7 @@ def add_transaction():
         }
         return jsonify(response), 500
 
-
+ 
 @app.route('/mine', methods=['POST'])
 def mine():
     # we never mine a block if we know we have conflict
@@ -296,5 +295,3 @@ if __name__ == '__main__':
 
     # run() take 2 args, IP and port
     app.run(host='0.0.0.0', port=port)
-
-
