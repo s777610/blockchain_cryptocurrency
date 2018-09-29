@@ -26,6 +26,10 @@ source activate <env_name>
 ```
 conda install --yes --file requirements.txt
 ```
+4. Run app
+```
+python node.py
+```
 
 ## Here is my home page  
 <img width="792" alt="screen shot 2018-09-08 at 10 45 08 pm" src="https://user-images.githubusercontent.com/35472776/45261552-73081a80-b3ba-11e8-971e-3441d1a74830.png">
