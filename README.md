@@ -1,7 +1,6 @@
 # Cryptocurrency (Blockchain-Development)
 
-## This project is one of the use cases of block-chain.
-## I build the small cryptocurrency system with python.
+## This project is one of the use cases of block-chain.  I build the small cryptocurrency system with python.
 
 1. The system allows users to create wallets.
 2. The key pair(public key and private key) is generated when creating the wallet.
