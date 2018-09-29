@@ -1,7 +1,7 @@
-# blockchain_cryptocurrency
+# Cryptocurrency (Blockchain-Development)
 
-This project is one of the use cases of block-chain.
-I build the small cryptocurrency system with python.
+## This project is one of the use cases of block-chain.
+## I build the small cryptocurrency system with python.
 
 1. The system allows users to create wallets.
 2. The key pair(public key and private key) is generated when creating the wallet.
@@ -28,14 +28,14 @@ source activate <env_name>
 conda install --yes --file requirements.txt
 ```
 
-## Here is my home page
+## Here is my home page  
 <img width="792" alt="screen shot 2018-09-08 at 10 45 08 pm" src="https://user-images.githubusercontent.com/35472776/45261552-73081a80-b3ba-11e8-971e-3441d1a74830.png">
 
-## After creating a wallet, users can starting mining.
+## After creating a wallet, users can starting mining.  
 <img width="1018" alt="screen shot 2018-09-08 at 10 51 53 pm" src="https://user-images.githubusercontent.com/35472776/45261571-1eb16a80-b3bb-11e8-84f5-22ba4c16b46a.png">
 
-## Users are able to check every transaction and block in the blockchain
+## Users are able to check every transaction and block in the blockchain  
 <img width="1030" alt="screen shot 2018-09-08 at 10 52 10 pm" src="https://user-images.githubusercontent.com/35472776/45261579-3daffc80-b3bb-11e8-8596-930df40046ba.png">
 
-## Users are able to check every open transaction.
+## Users are able to check every open transaction.  
 <img width="1008" alt="screen shot 2018-09-08 at 10 52 39 pm" src="https://user-images.githubusercontent.com/35472776/45261583-443e7400-b3bb-11e8-9b97-6d7cc7191fa6.png">
