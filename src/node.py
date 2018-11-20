@@ -286,7 +286,7 @@ if __name__ == '__main__':
     '''User can pass the port args in order to run app on different server'''
     from argparse import ArgumentParser
     parser = ArgumentParser()
-    parser.add_argument('-p', '--port', type=int, default=5000)
+    parser.add_argument('-p', '--port', type=int, default=5003)
     args = parser.parse_args()
     port = args.port
 
@@ -294,4 +294,4 @@ if __name__ == '__main__':
     blockchain = Blockchain(wallet.public_key, port)
 
     # run() take 2 args, IP and port
-    app.run(host='0.0.0.0', port=port)
+    app.run(host='0.0.0.0', port=port, debug=True)
