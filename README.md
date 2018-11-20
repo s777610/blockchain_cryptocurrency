@@ -16,7 +16,7 @@
 ## Installation (platform: osx-64)
 1. Create conda env
 ```
-conda env create --name <env_name></envname> -f=environment.yml
+conda env create --name <env_name> -f=environment.yml
 ```
 2. Activate env
 ```
